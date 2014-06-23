@@ -1,0 +1,61 @@
+
+nginx 运行方式,
+-v 查看版本号
+-V 查看版本号及编译参数
+-t 检测nginx.conf的配置
+-s 发送信号: stop,quit,reopen,reload
+-c 加载指定配置文件
+-p 据说是设置prefix，目前不明白
+-g 
+-q 
+
+ngx_debug_init
+不太明白,好像是根据操作系统版本，比如unix，linux，进行 MallocScribble 参数设置，跟检测内存泄露有关
+
+错误码初始化：
+src/os/unix/ngx_errno.c
+auto定义， ngx_auto_config.h  
+NGX_SYS_NERR  默认值107
+初始化到:ngx_sys_errlist   作用域 ngx_errno.o 模块 static
+
+由此得知，当获取错误码对应的信息的时候，可以使用: 
+ngx_strerror(ngx_err_t err, u_char *errstr, size_t size)
+
+ngx_log_stderr 写入错误信息到日志
+
+time 相关函数: ngx_time_init 初始化时间类型，时间相关函数，定义在ngx_time.h
+
+ngx_init_pcre 初始化正则
+
+进程相关函数: os/ngx_process.h
+
+getpid 获得当前运行进程pid.
+
+
+
+=============================================================================================
+About modules develepment. 
+
+模块文件config最简模板，只需要module_name
+
+ngx_addon_name=ngx_http_xy_module
+HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/${ngx_addon_name}.c"
+
+
+module.c中，初始化：ngx_module_t的结构体变量，全局变量，供nginx来协调，其中传递当前模块的static上下文，根据模块的类型不同
+上下文类型也不同，分别如下：
+
+NGX_CORE_MODULE		ngx_core_module_t
+NGX_HTTP_MODULE		ngx_http_module_t
+NGX_CONF_MODULE		NULL
+NGX_EVENT_MODULE	event_module_t
+NGX_MAIL_MODULE		mail_module_t
+
+ngx_command_t 用来描述提供给用户的command和模块函数的对应关系
+ngx_cycle_t nginx的流程结构
+
+模块通过ngx_cycle_t模块可以建立核心模块的代码，在ngx_module_t中定义的最后的四个回调需要这个参数.
+
+create_conf 跟配置文件中配置块的个数有关，每次配置相当于初始化不同的配置信息。
+
